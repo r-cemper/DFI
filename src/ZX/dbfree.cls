@@ -19,6 +19,29 @@ Property FreePrz As %Decimal(SCALE = 2);
 
 Property logFreePrz As %Decimal(SCALE = 2) [ Calculated, SqlComputeCode = {set {*}=$s({FreePrz}<1:0,1:$ZLOG({FreePrz}))}, SqlComputed ];
 
+ClassMethod Load()
+{
+	New $namespace
+	zn "%SYS"
+	do ..%KillExtent()
+	&sql(
+	INSERT or UPDATE Into %ZX.dbfree 
+		(DatabaseName, mbSize, mbAvail,freePrz)
+	select 
+		DatabaseName, SizeInt, AvailableNum, free
+	from %SYS.SYS.Database_FreeSpace()
+	)
+#; keep time + date	
+	set ^mtemp.ZXD=$ZDT($h,3)
+#; build cubes
+	zn "USER"
+	write "build cubes : " 
+	write ##class(%DeepSee.Utils).%BuildCube("ZX.DBdata",,0)," * "
+	hang 0.1
+	write ##class(%DeepSee.Utils).%BuildCube("ZX.DBlog",,0)
+	quit
+}
+
 Index idx On DatabaseName [ IdKey ];
 
 Storage Default
