@@ -1,7 +1,8 @@
 zn "%SYS" 
-// Unexpire passwords and set up passwordless mode to simplify dev use.
 do ##class(Security.Users).UnExpireUserPasswords("*")
 zpm "install passwordless"
+set param("DeepSeeEnabled")=1
+set sc=##class(Security.Applications).Modify("/csp/user",.param)
 zn "USER"
 zpm "load /ext -v":1
 halt
